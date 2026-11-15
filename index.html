@@ -1051,7 +1051,8 @@ function onPlayerFinish(){sfx('finish');showMsg(t('finish'),2.6);finishT=0;state
 function showResults(){state='results';const sorted=racers.slice().sort((a,b)=>a.place-b.place);
   // estimate unfinished
   const avg=player.finishTime/(LAPS*N);
-  sorted.forEach(r=>{if(!r.finished){r.estTime=raceT+((LAPS*N)-(r.prog+N))*avg*1.03;}});
+  const lastFin=Math.max(...sorted.filter(r=>r.finished).map(r=>r.finishTime));
+  sorted.forEach((r,i)=>{if(!r.finished){const rem=Math.max(0,LAPS*N-r.prog);r.estTime=Math.max(raceT+rem*avg*1.05,lastFin+0.4+i*0.25);}});
   const all=sorted.map(r=>({r,tm:r.finished?r.finishTime:r.estTime})).sort((a,b)=>a.tm-b.tm);
   $('resTable').innerHTML=all.map((x,i)=>`<tr class="${x.r.isPlayer?'me':''}"><td>${t('ord')(i+1)}</td><td><img src="${portraits[x.r.def.id]}"> ${x.r.def.name}</td><td class="t">${fmt(x.tm)}</td></tr>`).join('');
   const pp=all.findIndex(x=>x.r.isPlayer)+1;const nm=player.def.name;
