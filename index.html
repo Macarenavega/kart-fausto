@@ -80,7 +80,16 @@ body.touch #touch.on{display:block}
 .tbtn{position:absolute;pointer-events:auto;border-radius:50%;background:rgba(255,246,234,.55);border:3px solid rgba(255,255,255,.9);color:var(--ink);
  font-weight:700;display:flex;align-items:center;justify-content:center;text-align:center;font-size:clamp(11px,2.6vh,16px);box-shadow:0 4px 0 rgba(122,70,201,.5)}
 .tbtn.down{background:rgba(255,93,158,.85);color:#fff;transform:scale(.94)}
-#steer{position:absolute;pointer-events:auto;left:clamp(8px,2vw,30px);bottom:clamp(10px,4vh,34px);width:clamp(190px,46vh,300px);height:clamp(90px,23vh,140px);display:flex;gap:10px}
+#steer{position:absolute;pointer-events:auto;left:clamp(8px,2vw,30px);bottom:clamp(10px,4vh,34px);width:clamp(220px,62vh,380px);height:clamp(100px,32vh,190px);display:flex;gap:12px}
+#tDrift{right:3vw;bottom:5vh;width:28vh;height:28vh;max-width:160px;max-height:160px;font-size:clamp(13px,3.2vh,19px)}
+#tItem{right:calc(3vw + 30vh);bottom:8vh;width:22vh;height:22vh;max-width:130px;max-height:130px}
+#tItem svg{width:66%;height:66%}#tItem.empty{opacity:.45}
+#tGas,#tBrake{display:none!important}
+body.manual #tGas{display:flex!important;right:3vw;bottom:5vh;width:24vh;height:24vh}
+body.manual #tBrake{display:flex!important;right:calc(3vw + 27vh);bottom:5vh;width:17vh;height:17vh}
+body.manual #tDrift{bottom:32vh;width:20vh;height:20vh}
+body.manual #tItem{right:calc(3vw + 24vh);bottom:25vh;width:18vh;height:18vh}
+body.touch #hItem{pointer-events:auto}
 #steer div{flex:1;border-radius:28px;background:rgba(255,246,234,.55);border:3px solid rgba(255,255,255,.9);display:flex;align-items:center;justify-content:center;font-size:clamp(30px,8vh,52px);color:var(--purple);box-shadow:0 4px 0 rgba(122,70,201,.5)}
 #steer div.down{background:rgba(255,93,158,.85);color:#fff}
 body.touch #minimap{left:auto;right:clamp(8px,1.5vw,20px);top:calc(clamp(8px,2vh,20px) + clamp(92px,21vh,140px));bottom:auto;width:clamp(80px,20vh,140px);height:clamp(80px,20vh,140px)}
@@ -194,10 +203,10 @@ body.touch #minimap{left:auto;right:clamp(8px,1.5vw,20px);top:calc(clamp(8px,2vh
 
 <div id="touch">
   <div id="steer"><div data-dir="-1">◀</div><div data-dir="1">▶</div></div>
-  <div class="tbtn" data-k="item" style="right:clamp(96px,24vh,160px);bottom:clamp(70px,22vh,150px);width:clamp(64px,16vh,96px);height:clamp(64px,16vh,96px)" data-t="tItem"></div>
-  <div class="tbtn" data-k="drift" style="right:clamp(10px,2.5vw,30px);bottom:clamp(90px,27vh,180px);width:clamp(70px,18vh,108px);height:clamp(70px,18vh,108px)" data-t="tDrift"></div>
-  <div class="tbtn" data-k="gas" style="right:clamp(10px,2.5vw,30px);bottom:clamp(8px,3vh,26px);width:clamp(70px,18vh,108px);height:clamp(70px,18vh,108px)" data-t="tGas"></div>
-  <div class="tbtn" data-k="brake" style="right:clamp(96px,24vh,160px);bottom:clamp(8px,3vh,26px);width:clamp(54px,13vh,80px);height:clamp(54px,13vh,80px)" data-t="tBrake"></div>
+  <div class="tbtn empty" id="tItem" data-k="item" data-t="tItem"></div>
+  <div class="tbtn" id="tDrift" data-k="drift" data-t="tDrift"></div>
+  <div class="tbtn" id="tGas" data-k="gas" data-t="tGas"></div>
+  <div class="tbtn" id="tBrake" data-k="brake" data-t="tBrake"></div>
 </div>
 
 <div id="rotate"><div class="ph"></div><div data-t="rotate"></div></div>
@@ -225,7 +234,7 @@ const $ = id=>document.getElementById(id);
 function load(k,d){try{const v=localStorage.getItem('cvk_'+k);return v==null?d:JSON.parse(v);}catch(e){return d;}}
 function save(k,v){try{localStorage.setItem('cvk_'+k,JSON.stringify(v));}catch(e){}}
 const S = Object.assign({music:0.6,sfx:0.8,lang:(navigator.language||'en').toLowerCase().startsWith('es')?'es':'en',
-  quality:'high',autoGas:true,shake:true,diff:'normal'}, load('settings',{}));
+  quality:'high',autoGas:true,shake:true,diff:'normal',assist:isTouch}, load('settings',{}));
 let tutorialSeen = load('tut',false);
 let lastRacer = load('racer','fausto');
 
@@ -235,30 +244,30 @@ const TXT = {
   titleHint:isTouch?'Tap a button to begin':'Arrows + Enter, mouse or gamepad',choose:'Choose your racer',back:'Back',startRace:'Race!',
   gotIt:"Let's race!",done:'Done',paused:'Paused',resume:'Resume',restart:'Restart race',quit:'Quit to title',title2:'Title',again:'Race again',change:'Change racer',
   spd:'Speed',acc:'Accel',hnd:'Handling',lap:'Lap',finalLap:'Final lap!',wrong:'Wrong way!',go:'GO!',finish:'FINISH!',you:'YOU',
-  music:'Music',sfx:'Sound effects',lang:'Language',quality:'Graphics',high:'High',low:'Fast',autoGas:'Auto-gas (touch)',shake:'Camera shake',on:'On',off:'Off',
+  music:'Music',sfx:'Sound effects',lang:'Language',quality:'Graphics',high:'High',low:'Fast',autoGas:'Auto-gas (touch)',assist:'Steering help',shake:'Camera shake',on:'On',off:'Off',
   diff:'Rivals',easy:'Easy',normal:'Normal',hard:'Hard',
   tItem:'ITEM',tDrift:'DRIFT',tGas:'GAS',tBrake:'BRAKE',rotate:'Turn your phone sideways to race!',
   items:{shield:'Bubble Shield',pepper:'Pepper Jet',syrup:'Syrup Trap',bee:'Homing Bee'},
   resWin:n=>`${n} wins the Candy Valley Cup!`,resPlace:(n,p)=>`${n} finished ${p}`,best:'Best lap',
   ord:p=>p+(['th','st','nd','rd'][(p%100-20)%10]||['th','st','nd','rd'][p%100]||'th'),posSuf:p=>(['th','st','nd','rd'][p]||'th'),
-  tut:[['drive','Drive','<span class="key">W A S D</span> or <span class="key">Arrows</span> · Gamepad: <span class="key">RT</span> gas, <span class="key">LT</span> brake, stick to steer','Steer with ◀ ▶. Gas is automatic (change it in Settings).'],
+  tut:[['drive','Drive','<span class="key">W A S D</span> or <span class="key">Arrows</span> · Gamepad: <span class="key">RT</span> gas, <span class="key">LT</span> brake, stick to steer','Steer with ◀ ▶ — gas is automatic. Press both arrows together to brake.'],
        ['drift','Drift','Hold <span class="key">Shift</span> while turning (gamepad <span class="key">RB</span>). Sparks go blue → orange → purple. Let go for a boost!','Hold DRIFT while turning. Sparks go blue → orange → purple. Let go for a boost!'],
-       ['box','Items','Drive through <b>?</b> blocks, then press <span class="key">Space</span> (gamepad <span class="key">A</span>) to use your item.','Drive through <b>?</b> blocks, then tap ITEM.'],
+       ['box','Items','Drive through <b>?</b> blocks, then press <span class="key">Space</span> (gamepad <span class="key">A</span>) to use your item.','Drive through <b>?</b> blocks, then tap the item button (it shows what you got).'],
        ['pad','Boosts & jumps','Glowing arrow pads give a burst of speed. Hit the ramp fast to fly over the chocolate pond shortcut!','Glowing arrow pads give a burst of speed. Hit the ramp fast to fly over the chocolate pond shortcut!'],
        ['start','Rocket start','Press gas just as <b>1</b> turns into <b>GO!</b> for a jump start. <span class="key">Esc</span> pauses.','Tap GAS right as 1 turns into GO! for a jump start.']]},
  es:{title:'Kart del Valle<br>de Caramelo',subtitle:'El Gran Premio de Fausto y la tía Maca',play:'Jugar',howto:'Cómo se juega',settings:'Ajustes',
   titleHint:isTouch?'Tocá un botón para empezar':'Flechas + Enter, mouse o joystick',choose:'Elegí tu corredor',back:'Volver',startRace:'¡A correr!',
   gotIt:'¡Vamos!',done:'Listo',paused:'Pausa',resume:'Seguir',restart:'Reiniciar carrera',quit:'Salir al inicio',title2:'Inicio',again:'Correr otra vez',change:'Cambiar corredor',
   spd:'Velocidad',acc:'Aceleración',hnd:'Manejo',lap:'Vuelta',finalLap:'¡Última vuelta!',wrong:'¡Al revés!',go:'¡YA!',finish:'¡LLEGADA!',you:'VOS',
-  music:'Música',sfx:'Efectos',lang:'Idioma',quality:'Gráficos',high:'Altos',low:'Rápidos',autoGas:'Acelerar solo (táctil)',shake:'Sacudón de cámara',on:'Sí',off:'No',
+  music:'Música',sfx:'Efectos',lang:'Idioma',quality:'Gráficos',high:'Altos',low:'Rápidos',autoGas:'Acelerar solo (táctil)',assist:'Ayuda al volante',shake:'Sacudón de cámara',on:'Sí',off:'No',
   diff:'Rivales',easy:'Fácil',normal:'Normal',hard:'Difícil',
   tItem:'ÍTEM',tDrift:'DERRAPE',tGas:'ACELERAR',tBrake:'FRENO',rotate:'¡Poné el teléfono de costado para correr!',
   items:{shield:'Escudo Burbuja',pepper:'Ají Turbo',syrup:'Trampa de Almíbar',bee:'Abeja Rastreadora'},
   resWin:(n,f)=>`¡${n} ${f?'campeona':'campeón'} de la Copa Valle de Caramelo!`,resPlace:(n,p)=>`${n} llegó ${p}`,best:'Mejor vuelta',
   ord:p=>p+'.º',posSuf:()=>'.º',
-  tut:[['drive','Manejar','<span class="key">W A S D</span> o <span class="key">Flechas</span> · Joystick: <span class="key">RT</span> acelera, <span class="key">LT</span> frena, palanca para doblar','Doblá con ◀ ▶. Acelera solo (se cambia en Ajustes).'],
+  tut:[['drive','Manejar','<span class="key">W A S D</span> o <span class="key">Flechas</span> · Joystick: <span class="key">RT</span> acelera, <span class="key">LT</span> frena, palanca para doblar','Doblá con ◀ ▶: el kart acelera solo. Apretá las dos flechas juntas para frenar.'],
        ['drift','Derrapar','Mantené <span class="key">Shift</span> mientras doblás (joystick <span class="key">RB</span>). Las chispas pasan de azul → naranja → violeta. ¡Soltá para un turbo!','Mantené DERRAPE mientras doblás. Las chispas pasan de azul → naranja → violeta. ¡Soltá para un turbo!'],
-       ['box','Ítems','Pasá por los bloques <b>?</b> y apretá <span class="key">Espacio</span> (joystick <span class="key">A</span>) para usar tu ítem.','Pasá por los bloques <b>?</b> y tocá ÍTEM.'],
+       ['box','Ítems','Pasá por los bloques <b>?</b> y apretá <span class="key">Espacio</span> (joystick <span class="key">A</span>) para usar tu ítem.','Pasá por los bloques <b>?</b> y tocá el botón del ítem (muestra lo que te tocó).'],
        ['pad','Turbos y saltos','Las flechas que brillan te dan velocidad. ¡Agarrá la rampa rápido para volar sobre el atajo del lago de chocolate!','Las flechas que brillan te dan velocidad. ¡Agarrá la rampa rápido para volar sobre el atajo del lago de chocolate!'],
        ['start','Largada cohete','Apretá acelerar justo cuando el <b>1</b> pasa a <b>¡YA!</b> para salir disparado. <span class="key">Esc</span> pausa.','Tocá ACELERAR justo cuando el 1 pasa a ¡YA! para salir disparado.']]}
 };
@@ -709,11 +718,11 @@ function pollInput(){
     const ay=pad.axes[1]||0;if(e(13)||(ay>0.6&&!gpPrev.ay))nav=1;if(e(12)||(ay<-0.6&&!gpPrev.ay))nav=-1;
     if(e(15)||(ax>0.6&&!gpPrev.ax))navx=1;if(e(14)||(ax<-0.6&&!gpPrev.ax))navx=-1;
     gpPrev={};pad.buttons.forEach((x,i)=>gpPrev[i]=x.pressed);gpPrev.ay=Math.abs(ay)>0.6;gpPrev.ax=Math.abs(ax)>0.6;}
-  if(isTouch){if(touch.steer)st=touch.steer;if(touch.gas||(S.autoGas&&state==='race'))th=Math.max(th,1);if(touch.brake){br=1;if(S.autoGas&&!touch.gas)th=0;}if(touch.drift)dr=true;if(touch.itemEdge){it=true;touch.itemEdge=false;}}
+  if(isTouch){if(touch.steer)st=touch.steer;if(touch.gas||(S.autoGas&&state==='race'))th=Math.max(th,1);if(touch.brake||touch.both){br=1;if(!touch.gas)th=0;}if(touch.drift)dr=true;if(touch.itemEdge){it=true;touch.itemEdge=false;}}
   Object.assign(IN,{steer:st,throttle:th,brake:br,drift:dr,item:it,pause,confirm,back,nav,navx});}
 // touch wiring
 (function(){const sp=$('steer');const parts=[...sp.children];const ids=new Map();
-  function upd(){let s=0;ids.forEach(v=>s+=v);touch.steer=clamp(s,-1,1);parts[0].classList.toggle('down',touch.steer<0);parts[1].classList.toggle('down',touch.steer>0);}
+  function upd(){let s=0,l=0,r=0;ids.forEach(v=>{s+=v;if(v<0)l++;else r++;});touch.both=l>0&&r>0;touch.steer=clamp(s,-1,1);parts[0].classList.toggle('down',l>0);parts[1].classList.toggle('down',r>0);}
   function pos(e){const r=sp.getBoundingClientRect();return (e.clientX-r.left)/r.width<0.5?-1:1;}
   sp.addEventListener('pointerdown',e=>{e.preventDefault();audioInit();try{sp.setPointerCapture(e.pointerId);}catch(_){}ids.set(e.pointerId,pos(e));upd();});
   sp.addEventListener('pointermove',e=>{if(ids.has(e.pointerId)){ids.set(e.pointerId,pos(e));upd();}});
@@ -721,6 +730,7 @@ function pollInput(){
   document.querySelectorAll('.tbtn').forEach(b=>{const k=b.dataset.k;
     b.addEventListener('pointerdown',e=>{e.preventDefault();audioInit();try{b.setPointerCapture(e.pointerId);}catch(_){}touch[k]=true;if(k==='item')touch.itemEdge=true;b.classList.add('down');});
     ['pointerup','pointercancel','lostpointercapture'].forEach(n=>b.addEventListener(n,()=>{touch[k]=false;b.classList.remove('down');}));});
+  $('hItem').addEventListener('pointerdown',e=>{if(!isTouch)return;e.preventDefault();touch.itemEdge=true;});
   $('pauseBtn').addEventListener('pointerdown',e=>{e.preventDefault();if(state==='race'||state==='countdown')setPaused(true);});
   document.addEventListener('contextmenu',e=>e.preventDefault());})();
 function rumble(strong,weak,ms){const p=readPad();try{if(p&&p.vibrationActuator)p.vibrationActuator.playEffect('dual-rumble',{duration:ms,strongMagnitude:strong,weakMagnitude:weak});}catch(e){}
@@ -963,7 +973,7 @@ function updateHUD(dt){if(!player)return;const p=player.place;
   setH('lap',H.lap,`${t('lap')} ${Math.min(player.lap,LAPS)}/${LAPS}`);
   setH('time',H.time,fmt(state==='countdown'?0:player.finished?player.finishTime:raceT));
   let ic='',nm='';if(player.roll>0){rollIconT+=dt;const k=ITEMS[Math.floor(rollIconT*14)%4];ic='r'+k;}else if(player.item){ic=player.item;nm=t('items')[player.item];}
-  if(hudCache.ic!==ic){hudCache.ic=ic;H.item.innerHTML=ic?ICONS[ic.replace(/^r/,'')]:'';H.item.classList.toggle('rolling',ic[0]==='r');H.iname.textContent=nm;}
+  if(hudCache.ic!==ic){hudCache.ic=ic;H.item.innerHTML=ic?ICONS[ic.replace(/^r/,'')]:'';if(isTouch){const tb=$('tItem');tb.innerHTML=player.item&&player.roll<=0?ICONS[player.item]:t('tItem');tb.classList.toggle('empty',!(player.item&&player.roll<=0));}H.item.classList.toggle('rolling',ic[0]==='r');H.iname.textContent=nm;}
   setH('spd',H.spd,`<b>${Math.round(Math.max(0,player.speed)*3.6)}</b> km/h`);
   if(msgTimer>0){msgTimer-=dt;if(msgTimer<=0)H.msg.className='msg';}
   if(player.wrongT>1&&msgTimer<=0&&!player.finished){showMsg(t('wrong'),0.6,'small warn');}
@@ -1022,14 +1032,14 @@ function selectRacer(id){showRacer=id;const r=RACERS.find(x=>x.id===id);document
   $('selName').textContent=r.name;$('selBlurb').textContent=r[S.lang];
   $('selStats').innerHTML=[['spd',0],['acc',1],['hnd',2]].map(([k,i])=>`<div class="stat"><span>${t(k)}</span><div class="pips">${[1,2,3,4,5].map(n=>`<i class="${n<=r.st[i]?'f':''}"></i>`).join('')}</div></div>`).join('');
   Object.entries(showModels).forEach(([k,m])=>m.root.visible=k===id);}
-const SETS=[['music','slider'],['sfx','slider'],['lang',['en','es']],['diff',['easy','normal','hard']],['quality',['high','low']],['shake',[true,false]],['autoGas',[true,false]]];
+const SETS=[['music','slider'],['sfx','slider'],['lang',['en','es']],['diff',['easy','normal','hard']],['quality',['high','low']],['shake',[true,false]],['assist',[true,false]],['autoGas',[true,false]]];
 function buildSettings(){$('setBody').innerHTML=SETS.filter(s=>s[0]!=='autoGas'||isTouch).map(([k,ty])=>{let ctl;
   if(ty==='slider'){ctl=`<div class="slider"><button class="btn" data-act="set:${k}" data-dir="-1">−</button><div class="bar"><i style="width:${S[k]*100}%"></i></div><button class="btn" data-act="set:${k}" data-dir="1">+</button></div>`;}
   else{const v=S[k];const lab=k==='lang'?(v==='es'?'Español':'English'):typeof v==='boolean'?t(v?'on':'off'):t(v);ctl=`<button class="btn" data-act="set:${k}">${lab}</button>`;}
   return `<div>${t(k)}</div>${ctl}`;}).join('');refocus();}
 function changeSetting(k,dir){const def=SETS.find(s=>s[0]===k);if(def[1]==='slider'){S[k]=clamp(Math.round((S[k]+dir*0.1)*10)/10,0,1);applyVolumes();sfx('ui');}
   else{const o=def[1];S[k]=o[(o.indexOf(S[k])+(dir>0?1:o.length-1))%o.length];}
-  if(k==='lang'){applyText();}if(k==='quality')applyQuality();save('settings',S);const fi=focusIdx;buildSettings();focusIdx=fi;refocus();}
+  if(k==='lang'){applyText();}if(k==='quality')applyQuality();if(k==='autoGas')document.body.classList.toggle('manual',!S.autoGas);save('settings',S);const fi=focusIdx;buildSettings();focusIdx=fi;refocus();}
 function setPaused(p){if(p===paused)return;if(p&&!(state==='race'||state==='countdown'))return;paused=p;if(p){show('pause');if(AU.eng)AU.eng.g.gain.value=0;if(AU.mus)AU.mus.gain.value=S.music*0.2;}else{show(null);applyVolumes();}}
 function menuNav(){if(!screen)return;const f=focusables();if(!f.length)return;
   if(screen==='select'){const i=RACERS.findIndex(r=>r.id===showRacer);if(IN.navx){selectRacer(RACERS[(i+IN.navx+RACERS.length)%RACERS.length].id);sfx('move');}
@@ -1093,7 +1103,12 @@ function simStep(dt){
     racers.forEach(r=>{const c=r.isPlayer?IN:{throttle:countT>r.ai.startAt?1:0,steer:0,brake:0,drift:false};physics(r,c,dt,true);});return;}
   if(state==='race'||state==='finished'||state==='results')raceT+=dt;
   for(const r of racers){let c;
-    if(r.isPlayer&&!window.__game.auto&&state==='race')c=IN;
+    if(r.isPlayer&&!window.__game.auto&&state==='race'){c=IN;
+      if(S.assist&&Math.abs(IN.steer)<0.1&&r.nr&&r.spin<=0&&r.drift===0){const i=r.nr.i;const ti=(i+Math.floor(12+Math.max(0,r.speed)*0.5))%N;const lat=clamp(r.nr.lat,-W+3,W-3);
+        const tp=SP[ti].clone().addScaledVector(NRM[ti],lat);const diff=wrapA(Math.atan2(tp.x-r.pos.x,tp.z-r.pos.z)-r.h);
+        c=Object.assign({},IN,{steer:clamp(-diff*1.6,-0.7,0.7)});}
+      if(Math.abs(r.speed)<2.5&&r.spin<=0&&(r.offroad||r.nr&&r.nr.dist>W+6))r.stuckT=(r.stuckT||0)+dt;else r.stuckT=0;
+      if(r.stuckT>2.5){r.stuckT=0;const i=r.nr.i;r.pos.copy(SP[i]);r.pos.y=0;r.h=Math.atan2(TAN[i].x,TAN[i].z);r.speed=6;camState.h=r.h;burst(r.pos.clone().setY(1),14,[0xffffff,0xff9cc6],6,0.5,0.9,6);}}
     else{r.nr=r.nr||nearest(r.pos);c=aiControl(r,dt);if(r.isPlayer){c.item=c.item&&state==='race';}}
     if(r.isPlayer&&state!=='race'&&!window.__game.auto){r.nr=r.nr||nearest(r.pos);c=aiControl(r,dt);c.item=false;}
     physics(r,c,dt,false);}
@@ -1101,7 +1116,7 @@ function simStep(dt){
   if(state==='finished'){finishT+=dt;if(finishT>3.2)showResults();}}
 
 // ================= BOOT
-function boot(){applyText();resize();applyQuality();
+function boot(){document.body.classList.toggle('manual',!S.autoGas);applyText();resize();applyQuality();
   try{makePortraits();}catch(e){console.warn('portraits',e);}
   // precompute pad/box indices for AI
   PADS.forEach(p=>{const n=nearest(p.p);p.idx=n.i;p.lat=n.lat;});
